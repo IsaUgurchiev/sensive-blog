@@ -9,10 +9,10 @@ class PostQuerySet(models.QuerySet):
         return posts_at_year
 
     def popular(self):
-        popular_posts = self.annotate(likes_count=models.Count('likes')).order_by('likes_count')
-        return popular_posts
+        return self.annotate(likes_count=models.Count('likes', distinct=True)).order_by('-likes_count')
 
     def fetch_with_comments_count(self):
+        # Этот код взял для оптимизации двух annotate https://gist.github.com/dvmn-tasks/4517a7c0e4167c5929b9e94f5cb0d999
         posts_ids = [post.id for post in self]
         posts_with_comments = Post.objects.filter(id__in=posts_ids).annotate(comments_count=models.Count('comments'))
         ids_and_comments = posts_with_comments.values_list('id', 'comments_count')
